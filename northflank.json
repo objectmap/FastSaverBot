@@ -1,0 +1,145 @@
+{
+  "$schema": "https://api.northflank.com/v1/schemas/template",
+  "apiVersion": "v1.2",
+  "spec": {
+    "kind": "Workflow",
+    "spec": {
+      "type": "sequential",
+      "steps": [
+        {
+          "kind": "Project",
+          "ref": "project",
+          "spec": {
+            "name": "SaverBot",
+            "description": "Express is a minimal and flexible Node.js web application framework that provides a robust set of features for web and mobile applications.",
+            "region": "europe-west-frankfurt",
+            "color": "#EF233C",
+            "customRegistry": {
+              "enabled": false
+            },
+            "networking": {
+              "allowedIngressProjects": []
+            }
+          }
+        },
+        {
+          "kind": "Workflow",
+          "spec": {
+            "type": "sequential",
+            "context": {
+              "projectId": "${refs.project.id}"
+            },
+            "steps": [
+              {
+                "kind": "Action",
+                "ref": "cloneAction",
+                "spec": {
+                  "kind": "VCS",
+                  "spec": {
+                    "type": "createRepoFromSource",
+                    "data": {
+                      "sourceData": {
+                        "vcsService": "github",
+                        "repoUrl": "https://github.com/northflank-examples/node-express-example"
+                      },
+                      "targetData": {
+                        "vcsService": "github",
+                        "accountLogin": "objectmap",
+                        "name": "SaverBot",
+                        "privateRepo": true
+                      }
+                    }
+                  }
+                }
+              },
+              {
+                "kind": "Condition",
+                "ref": "cloneCondition",
+                "spec": {
+                  "kind": "VCS",
+                  "spec": {
+                    "type": "createRepoFromSourceSuccess",
+                    "data": {
+                      "trackerId": "${refs.cloneAction.trackerId}"
+                    }
+                  }
+                }
+              },
+              {
+                "kind": "CombinedService",
+                "ref": "node-express",
+                "spec": {
+                  "name": "Node Express",
+                  "description": "",
+                  "billing": {
+                    "deploymentPlan": "nf-compute-20"
+                  },
+                  "deployment": {
+                    "instances": 1,
+                    "docker": {
+                      "configType": "default"
+                    },
+                    "buildpack": {
+                      "configType": "default"
+                    },
+                    "storage": {
+                      "ephemeralStorage": {
+                        "storageSize": 1024
+                      }
+                    }
+                  },
+                  "ports": [
+                    {
+                      "name": "app",
+                      "internalPort": 80,
+                      "public": true,
+                      "protocol": "HTTP",
+                      "security": {
+                        "credentials": [],
+                        "policies": []
+                      },
+                      "domains": [],
+                      "disableNfDomain": false
+                    }
+                  ],
+                  "vcsData": {
+                    "projectUrl": "${refs.cloneCondition.projectUrl}",
+                    "projectType": "${refs.cloneCondition.projectType}",
+                    "projectBranch": "master"
+                  },
+                  "buildSettings": {
+                    "dockerfile": {
+                      "buildEngine": "kaniko",
+                      "dockerFilePath": "/Dockerfile",
+                      "dockerWorkDir": "/"
+                    }
+                  },
+                  "healthChecks": [],
+                  "disabledCI": false,
+                  "buildConfiguration": {
+                    "pathIgnoreRules": [],
+                    "isAllowList": false,
+                    "ciIgnoreFlagsEnabled": false
+                  },
+                  "runtimeEnvironment": {},
+                  "buildArguments": {}
+                }
+              }
+            ]
+          }
+        }
+      ]
+    }
+  },
+  "options": {
+    "autorun": false,
+    "concurrencyPolicy": "allow"
+  },
+  "gitops": {
+    "repoUrl": "https://github.com/objectmap/FastSaverBot",
+    "vcsService": "github",
+    "accountLogin": "objectmap",
+    "branch": "main",
+    "filePath": "/northflank.json"
+  }
+}
