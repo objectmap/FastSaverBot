@@ -1,0 +1,24 @@
+{
+  "name": "music-saver",
+  "version": "1.0.0",
+  "description": "",
+  "license": "ISC",
+  "author": "objectmap",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "lowdb": "^7.0.1",
+    "play-dl": "^1.9.7",
+    "puregram": "^3.6.0",
+    "scdl-core": "^1.1.0",
+    "telegraf": "^4.16.3"
+  },
+  "devDependencies": {
+    "@types/node": "^26.1.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^6.0.3"
+  }
+}
